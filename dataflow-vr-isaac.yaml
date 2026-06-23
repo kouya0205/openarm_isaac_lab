@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # VR teleoperation dataflow with Isaac Sim replacing MuJoCo.
-# Prefer: ./scripts/data_collection/run_vr.sh
+# Run from repo root: ./scripts/data_collection/run_vr.sh
 
 nodes:
   - id: ui

@@ -22,10 +22,11 @@ cd "$ROOT"
 # shellcheck source=scripts/data_collection/dora_cli.sh
 source "$(dirname "${BASH_SOURCE[0]}")/dora_cli.sh"
 setup_dora_path
+install_dora_nodes vr
 DORA="$(resolve_dora_cmd)"
-DATAFLOW="dataflows/dataflow-vr-isaac.yaml"
+DATAFLOW="dataflow-vr-isaac.yaml"
 
 echo "[dataflow] Building node dependencies..."
-"$DORA" build "$DATAFLOW" --uv
+"$DORA" build "$DATAFLOW"
 echo "[dataflow] Starting VR Isaac data collection..."
-exec "$DORA" run "$DATAFLOW" --uv "$@"
+exec "$DORA" run "$DATAFLOW" "$@"

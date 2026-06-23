@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Resolve Python and the dora CLI for Isaac Lab Docker and local installs.
-# Isaac Sim Docker often has pip on PATH but not ``python`` / ``python3``, and
-# console scripts land in sys.prefix/bin which is also off PATH.
+# Resolve Python/pip and the dora CLI for Isaac Lab Docker and local installs.
 
 resolve_python() {
   local name candidate pip_path
@@ -53,6 +51,27 @@ resolve_python() {
   return 1
 }
 
+setup_dora_path() {
+  local py bin_dir
+
+  for bin_dir in \
+    /workspace/isaaclab/_isaac_sim/kit/python/bin \
+    "${ISAACLAB_PATH:-}/_isaac_sim/kit/python/bin"; do
+    if [[ -n "$bin_dir" && -d "$bin_dir" ]]; then
+      PATH="$bin_dir:$PATH"
+    fi
+  done
+
+  if py="$(resolve_python 2>/dev/null)"; then
+    bin_dir="$(dirname "$py")"
+    if [[ -d "$bin_dir" ]]; then
+      PATH="$bin_dir:$PATH"
+    fi
+  fi
+
+  export PATH
+}
+
 resolve_dora_cmd() {
   if command -v dora >/dev/null 2>&1; then
     command -v dora
@@ -77,7 +96,7 @@ resolve_dora_cmd() {
     return 0
   fi
 
-  pip_bin_dir="$("$py" -c 'import os, sys; print(os.path.join(sys.prefix, "bin"))')"
+  pip_bin_dir="$(dirname "$py")"
   if [[ -x "$pip_bin_dir/dora" ]]; then
     printf '%s\n' "$pip_bin_dir/dora"
     return 0
@@ -89,23 +108,46 @@ resolve_dora_cmd() {
   return 1
 }
 
-setup_dora_path() {
-  local py bin_dir
+install_dora_nodes() {
+  local profile="$1"
+  local py node_dir
+  local -a node_dirs=()
 
-  for bin_dir in \
-    /workspace/isaaclab/_isaac_sim/kit/python/bin \
-    "${ISAACLAB_PATH:-}/_isaac_sim/kit/python/bin"; do
-    if [[ -n "$bin_dir" && -d "$bin_dir" ]]; then
-      PATH="$bin_dir:$PATH"
+  py="$(resolve_python)" || return 1
+
+  case "$profile" in
+    dummy)
+      node_dirs=(
+        nodes/dora-openarm-data-collection-ui
+        nodes/dora-openarm-quitter
+        nodes/dora-openarm-dummy-ker
+        nodes/dora-openarm-dataset-recorder
+        nodes/dora-openarm-isaac
+      )
+      ;;
+    vr)
+      node_dirs=(
+        nodes/dora-openarm-data-collection-ui
+        nodes/dora-openarm-quitter
+        nodes/dora-openarm-dataset-recorder
+        nodes/dora-openarm-vr
+        nodes/dora-openarm-kinematics
+        nodes/dora-openarm-isaac
+      )
+      ;;
+    *)
+      echo "Unknown profile: $profile (expected dummy or vr)" >&2
+      return 1
+      ;;
+  esac
+
+  echo "[install] Installing dora nodes with: $py"
+  for node_dir in "${node_dirs[@]}"; do
+    if [[ ! -d "$node_dir" ]]; then
+      echo "Missing node directory: $node_dir (run git submodule update --init --recursive)" >&2
+      return 1
     fi
+    echo "[install] pip install -e $node_dir"
+    "$py" -m pip install -e "$node_dir"
   done
-
-  if py="$(resolve_python 2>/dev/null)"; then
-    bin_dir="$("$py" -c 'import os, sys; print(os.path.join(sys.prefix, "bin"))')"
-    if [[ -d "$bin_dir" ]]; then
-      PATH="$bin_dir:$PATH"
-    fi
-  fi
-
-  export PATH
 }

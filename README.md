@@ -212,8 +212,9 @@ pip install -e nodes/dora-openarm-isaac
 ./scripts/data_collection/run_dummy.sh
 ```
 
-This runs ``dora build`` (installs submodule nodes) then ``dora run``.
-Same two-step flow as the MuJoCo dummy dataflow.
+This runs ``dora build`` then ``dora run`` from the repository root.
+Isaac Lab Docker uses Isaac Sim's system Python (not a ``uv venv``), so do not
+pass ``--uv`` to dora commands in this environment.
 
 ### VR teleoperation
 
