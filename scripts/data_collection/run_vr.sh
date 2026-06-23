@@ -22,6 +22,7 @@ cd "$ROOT"
 # shellcheck source=scripts/data_collection/dora_cli.sh
 source "$(dirname "${BASH_SOURCE[0]}")/dora_cli.sh"
 setup_dora_path
+export PATH
 install_dora_nodes vr
 DORA="$(resolve_dora_cmd)"
 DATAFLOW="dataflow-vr-isaac.yaml"
