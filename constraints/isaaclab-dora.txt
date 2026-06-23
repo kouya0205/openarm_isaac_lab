@@ -1,0 +1,2 @@
+# Keep dora node installs compatible with Isaac Lab 2.3 / Isaac Sim 5.1.
+numpy>=1.23,<2

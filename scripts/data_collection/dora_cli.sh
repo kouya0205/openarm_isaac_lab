@@ -142,12 +142,28 @@ install_dora_nodes() {
   esac
 
   echo "[install] Installing dora nodes with: $py"
+  local constraints
+  constraints="$(pwd)/constraints/isaaclab-dora.txt"
+  if [[ ! -f "$constraints" ]]; then
+    echo "Missing constraints file: $constraints" >&2
+    return 1
+  fi
+
+  # Isaac Lab requires numpy<2; pin before any dora node install.
+  "$py" -m pip install -c "$constraints" "numpy>=1.23,<2"
+
   for node_dir in "${node_dirs[@]}"; do
     if [[ ! -d "$node_dir" ]]; then
       echo "Missing node directory: $node_dir (run git submodule update --init --recursive)" >&2
       return 1
     fi
-    echo "[install] pip install -e $node_dir"
-    "$py" -m pip install -e "$node_dir"
+    if [[ "$node_dir" == *dora-openarm-isaac ]]; then
+      echo "[install] pip install -e $node_dir (with Isaac Lab constraints)"
+      "$py" -m pip install -e "$node_dir" -c "$constraints"
+    else
+      # Submodule nodes may declare numpy>=2 (e.g. VR); skip deps on Isaac python.
+      echo "[install] pip install -e $node_dir --no-deps"
+      "$py" -m pip install -e "$node_dir" --no-deps
+    fi
   done
 }

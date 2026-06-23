@@ -17,7 +17,7 @@
 
 nodes:
   - id: ui
-    build: pip install -e nodes/dora-openarm-data-collection-ui
+    build: pip install -e nodes/dora-openarm-data-collection-ui --no-deps
     path: dora-openarm-data-collection-ui
     env:
       METADATA_FILE: "metadata_isaac.yaml"
@@ -33,7 +33,7 @@ nodes:
       - command
 
   - id: quittable-tick-leader
-    build: pip install -e nodes/dora-openarm-quitter
+    build: pip install -e nodes/dora-openarm-quitter --no-deps
     path: dora-openarm-quitter
     inputs:
       command: ui/command
@@ -42,7 +42,7 @@ nodes:
       - tick
 
   - id: udp-receiver
-    build: pip install -e nodes/dora-openarm-vr
+    build: pip install -e nodes/dora-openarm-vr --no-deps
     path: dora-openarm-quest-receiver
     args: "--host 0.0.0.0 --port 5006"
     inputs:
@@ -58,7 +58,7 @@ nodes:
       - status
 
   - id: ik
-    build: pip install -e nodes/dora-openarm-kinematics
+    build: pip install -e nodes/dora-openarm-kinematics --no-deps
     path: dora-openarm-ik
     args: "--mode bimanual --max-iters 10 --dt 0.1 --damping 0.1 --posture-cost 0.01 --lm-damping 0.01"
     inputs:
@@ -74,7 +74,7 @@ nodes:
 
   # ── Isaac Sim (replaces mujoco-collect) ──────────────────────────────────────
   - id: isaac-collect
-    build: pip install -e nodes/dora-openarm-isaac
+    build: pip install -e nodes/dora-openarm-isaac -c constraints/isaaclab-dora.txt
     path: dora-openarm-isaac
     args: "--headless --enable_cameras --render"
     inputs:
@@ -94,7 +94,7 @@ nodes:
       - camera_ceiling
 
   - id: recorder
-    build: pip install -e nodes/dora-openarm-dataset-recorder
+    build: pip install -e nodes/dora-openarm-dataset-recorder --no-deps
     path: dora-openarm-dataset-recorder
     env:
       METADATA_FILE: "metadata_isaac.yaml"

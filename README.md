@@ -223,9 +223,15 @@ pass ``--uv`` to dora commands in this environment.
 ```
 
 The run scripts call ``init_submodules.sh`` as a fallback when submodules are missing.
-In Isaac Sim Docker, ``pip`` may be on ``PATH`` while ``python`` is not, and the
-``dora`` CLI may live under ``_isaac_sim/kit/python/bin``; the run scripts resolve
-both automatically.
+In Isaac Sim Docker, ``pip install`` must not upgrade ``numpy`` to 2.x (Isaac Lab
+requires ``numpy<2``). The run scripts use ``constraints/isaaclab-dora.txt`` and
+``--no-deps`` for submodule nodes to avoid breaking the Isaac environment.
+
+If ``numpy`` was already upgraded, restore it before re-running:
+
+```bash
+/workspace/isaaclab/_isaac_sim/kit/python/bin/python3 -m pip install "numpy>=1.23,<2"
+```
 
 | Node | Role |
 | ---- | ---- |
