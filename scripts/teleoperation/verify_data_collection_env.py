@@ -42,7 +42,6 @@ parser.add_argument(
     default=None,
     help="Optional directory to save one RGB frame per camera after the run.",
 )
-parser.add_argument("--device", type=str, default="cuda:0", help="Simulation device.")
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 
