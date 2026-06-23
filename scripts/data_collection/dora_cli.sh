@@ -13,9 +13,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Resolve the dora CLI executable.
-# Isaac Sim Docker installs console scripts under sys.prefix/bin, which is often
-# not on PATH even after ``pip install dora-rs-cli``.
+# Resolve Python and the dora CLI for Isaac Lab Docker and local installs.
+# Isaac Sim Docker often has pip on PATH but not ``python`` / ``python3``, and
+# console scripts land in sys.prefix/bin which is also off PATH.
+
+resolve_python() {
+  local name candidate pip_path
+
+  for name in python python3; do
+    if command -v "$name" >/dev/null 2>&1; then
+      command -v "$name"
+      return 0
+    fi
+  done
+
+  for name in pip pip3; do
+    if command -v "$name" >/dev/null 2>&1; then
+      pip_path="$(command -v "$name")"
+      for candidate in python3 python; do
+        candidate="$(dirname "$pip_path")/$candidate"
+        if [[ -x "$candidate" ]]; then
+          printf '%s\n' "$candidate"
+          return 0
+        fi
+      done
+    fi
+  done
+
+  for candidate in \
+    /workspace/isaaclab/_isaac_sim/kit/python/bin/python3 \
+    "${ISAACLAB_PATH:-}/_isaac_sim/kit/python/bin/python3"; do
+    if [[ -n "$candidate" && -x "$candidate" ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+
+  echo "Python interpreter not found (tried python, python3, pip sibling, Isaac Lab paths)." >&2
+  return 1
+}
 
 resolve_dora_cmd() {
   if command -v dora >/dev/null 2>&1; then
@@ -23,15 +59,32 @@ resolve_dora_cmd() {
     return 0
   fi
 
-  local dora_bin
-  dora_bin="$(python -c 'import os, sys; print(os.path.join(sys.prefix, "bin", "dora"))')"
+  local py dora_bin pip_bin_dir
+
+  for dora_bin in \
+    /workspace/isaaclab/_isaac_sim/kit/python/bin/dora \
+    "${ISAACLAB_PATH:-}/_isaac_sim/kit/python/bin/dora"; do
+    if [[ -n "$dora_bin" && -x "$dora_bin" ]]; then
+      printf '%s\n' "$dora_bin"
+      return 0
+    fi
+  done
+
+  py="$(resolve_python)" || return 1
+  dora_bin="$("$py" -c 'import os, sys; print(os.path.join(sys.prefix, "bin", "dora"))')"
   if [[ -x "$dora_bin" ]]; then
     printf '%s\n' "$dora_bin"
     return 0
   fi
 
+  pip_bin_dir="$("$py" -c 'import os, sys; print(os.path.join(sys.prefix, "bin"))')"
+  if [[ -x "$pip_bin_dir/dora" ]]; then
+    printf '%s\n' "$pip_bin_dir/dora"
+    return 0
+  fi
+
   echo "dora CLI not found. Install with: pip install -e nodes/dora-openarm-isaac" >&2
-  echo "If already installed, add Python scripts to PATH, e.g.:" >&2
-  echo "  export PATH=\"\$(python -c 'import os, sys; print(os.path.join(sys.prefix, \"bin\"))'):\$PATH\"" >&2
+  echo "Then ensure this directory is on PATH:" >&2
+  echo "  $pip_bin_dir" >&2
   return 1
 }
