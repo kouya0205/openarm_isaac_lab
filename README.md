@@ -12,14 +12,15 @@ This repository provides simulation and learning environments for the **OpenArm 
 It enables research and development in **reinforcement learning (RL)**, **imitation learning (IL)**, **teleoperation**, and **sim-to-real transfer** for both **unimanual (single-arm)** and **bimanual (dual-arm)** robotic systems.
 
 > **Note:** This is a personal fork of [enactic/openarm_isaac_lab](https://github.com/enactic/openarm_isaac_lab).
-> It adds Isaac Sim environments for **dora-based teleoperation data collection** (Phase 1).
+> It adds Isaac Sim environments and a **dora Isaac bridge** for teleoperation data collection.
 > Clone this fork (`kouya0205/openarm_isaac_lab`) rather than the upstream repository.
 
 ### What this repo offers
 - **Isaac Sim models** for OpenArm robots.
 - **Isaac Lab training environments** for RL tasks (reach, lift a cube, open a drawer).
 - **Bimanual data-collection environment** for dora teleoperation (Phase 1).
-- **Imitation learning**, **dora Isaac bridge**, and **sim-to-sim / sim-to-real transfer pipelines** are under active development in this fork.
+- **`dora-openarm-isaac` node** connecting Isaac Sim to the dora dataflow (Phase 2).
+- **Imitation learning** and **sim-to-sim / sim-to-real transfer pipelines** are under active development in this fork.
 
 This repository has been tested with:
 - **Ubuntu 22.04**
@@ -42,6 +43,7 @@ This repository has been tested with:
     - [Replay Trained Model](#replay-trained-model)
     - [Analyze logs](#analyze-logs)
   - [Teleoperation Data Collection (Phase 1)](#teleoperation-data-collection-phase-1)
+  - [Teleoperation Data Collection (Phase 2)](#teleoperation-data-collection-phase-2)
   - [Syncing with upstream](#syncing-with-upstream)
   - [Sim2sim](#sim2sim)
   - [Sim2Real Deployment using OpenArm](#sim2real-deployment-using-openarm)
@@ -76,10 +78,10 @@ docker run --name isaac-lab --entrypoint bash -it --gpus all --rm -e "ACCEPT_EUL
    nvcr.io/nvidia/isaac-lab:2.3.0
 ```
 
-3. Clone this fork at your HOME directory
+3. Clone this fork at your HOME directory (use ``--recursive`` for data collection submodules)
 ```bash
 cd /workspace
-git clone https://github.com/kouya0205/openarm_isaac_lab.git
+git clone --recursive https://github.com/kouya0205/openarm_isaac_lab.git
 ```
 
 4. Install python package with
@@ -97,10 +99,10 @@ python ./scripts/tools/list_envs.py
 
 It is assumed that you have created a virtual environment named env_isaaclab using miniconda or anaconda and will be working within that environment.
 
-1. Clone this fork at your HOME directory
+1. Clone this fork at your HOME directory (use ``--recursive`` for data collection submodules)
 ```bash
 cd ~
-git clone https://github.com/kouya0205/openarm_isaac_lab.git
+git clone --recursive https://github.com/kouya0205/openarm_isaac_lab.git
 ```
 
 2. Activate your virtual env which contains Isaac Lab package
@@ -179,7 +181,50 @@ python ./scripts/teleoperation/verify_data_collection_env.py \
   --output_dir /tmp/openarm_cam_test
 ```
 
-Phase 2 (in progress): `dora-openarm-isaac` node connecting this environment to the dora dataflow.
+## Teleoperation Data Collection (Phase 2)
+
+`dora-openarm-isaac` replaces `dora-openarm-mujoco` in a dora dataflow.
+Supporting dora nodes are included as **git submodules** under ``nodes/`` (same layout as
+[dora-openarm-data-collection](https://github.com/enactic/dora-openarm-data-collection)).
+
+Clone with submodules:
+
+```bash
+git clone --recursive https://github.com/kouya0205/openarm_isaac_lab.git
+```
+
+If you already cloned without ``--recursive``:
+
+```bash
+git submodule update --init --recursive
+```
+
+Install inside your Isaac Lab environment:
+
+```bash
+python -m pip install -e source/openarm
+pip install -e nodes/dora-openarm-isaac
+```
+
+### Dummy smoke test (no VR)
+
+```bash
+./scripts/data_collection/run_dummy.sh
+```
+
+### VR teleoperation
+
+```bash
+./scripts/data_collection/run_vr.sh
+```
+
+The run scripts call ``init_submodules.sh`` as a fallback when submodules are missing.
+
+| Node | Role |
+| ---- | ---- |
+| `isaac-collect` | Isaac Sim sim + cameras (`nodes/dora-openarm-isaac`) |
+| `ik` | VR pose → joint targets (`nodes/dora-openarm-kinematics`) |
+| `recorder` | Dataset writer (`nodes/dora-openarm-dataset-recorder`) |
 
 ## Syncing with upstream
 
