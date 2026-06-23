@@ -16,9 +16,10 @@
 
 Run on Linux with Isaac Sim / Isaac Lab installed:
 
-    python scripts/teleoperation/verify_data_collection_env.py --task Isaac-Data-Collection-OpenArm-Bi-Play-v0
+    python scripts/teleoperation/verify_data_collection_env.py \
+      --task Isaac-Data-Collection-OpenArm-Bi-Play-v0 --enable_cameras
 
-Use ``--headless`` for servers without a display.
+Use ``--headless --enable_cameras`` for servers without a display.
 """
 
 """Launch Isaac Sim Simulator first."""
@@ -41,8 +42,12 @@ parser.add_argument(
     default=None,
     help="Optional directory to save one RGB frame per camera after the run.",
 )
+parser.add_argument("--device", type=str, default="cuda:0", help="Simulation device.")
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
+
+# Camera sensors require the offscreen rendering pipeline.
+args_cli.enable_cameras = True
 
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
@@ -50,12 +55,15 @@ simulation_app = app_launcher.app
 """Rest everything follows."""
 
 import os
+import traceback
 
 import gymnasium as gym
 import numpy as np
 import torch
 
-import openarm  # noqa: F401
+import openarm.tasks  # noqa: F401
+from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
+
 from openarm.tasks.manager_based.openarm_manipulation.bimanual.data_collection.joint_utils import (
     DORA_CAMERA_NAMES,
 )
@@ -84,7 +92,7 @@ def _save_camera_samples(obs: dict, output_dir: str) -> None:
         if isinstance(rgb, torch.Tensor):
             rgb = rgb[0].detach().cpu().numpy()
         if rgb.dtype != np.uint8:
-            rgb = np.clip(rgb, 0, 255).astype(np.uint8)
+            rgb = np.clip(rgb * 255.0 if rgb.max() <= 1.0 else rgb, 0, 255).astype(np.uint8)
         try:
             from PIL import Image
         except ImportError as exc:
@@ -95,7 +103,10 @@ def _save_camera_samples(obs: dict, output_dir: str) -> None:
 
 
 def main() -> None:
-    env = gym.make(args_cli.task)
+    env_cfg = parse_env_cfg(args_cli.task, device=args_cli.device, num_envs=1)
+    render_mode = "rgb_array" if args_cli.headless else None
+    env = gym.make(args_cli.task, cfg=env_cfg, render_mode=render_mode)
+
     print(f"Task: {args_cli.task}")
     print(f"Action space: {env.action_space}")
     print(f"Observation space: {env.observation_space}")
@@ -107,10 +118,7 @@ def main() -> None:
     zero_action = torch.zeros(env.action_space.shape, device=env.unwrapped.device)
     for step in range(args_cli.num_steps):
         step_result = env.step(zero_action)
-        if len(step_result) == 2:
-            obs, _info = step_result
-        else:
-            obs = step_result[0]
+        obs = step_result[0]
         if step % 30 == 0:
             print(f"step {step}: left qpos[0]={obs['recording']['left_arm_qpos'][0, 0].item():.4f}")
 
@@ -126,5 +134,8 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
+    except Exception:
+        traceback.print_exc()
+        raise
     finally:
         simulation_app.close()

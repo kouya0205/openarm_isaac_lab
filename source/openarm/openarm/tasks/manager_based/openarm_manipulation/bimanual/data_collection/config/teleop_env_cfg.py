@@ -17,9 +17,7 @@
 from isaaclab.assets.articulation import ArticulationCfg
 from isaaclab.utils import configclass
 
-from source.openarm.openarm.tasks.manager_based.openarm_manipulation.assets.openarm_bimanual import (
-    OPEN_ARM_HIGH_PD_CFG,
-)
+from openarm.tasks.manager_based.openarm_manipulation.assets.openarm_bimanual import OPEN_ARM_HIGH_PD_CFG
 
 from .. import mdp
 from ..data_collection_env_cfg import DataCollectionEnvCfg

@@ -79,24 +79,24 @@ class DataCollectionSceneCfg(InteractiveSceneCfg):
     # Camera names match dora-openarm-mujoco / dataset recorder outputs.
     # Positions are initial estimates; calibrate against MuJoCo demo scene in Phase 3.
     camera_wrist_right = _make_camera_cfg(
-        prim_path="{ENV_REGEX_NS}/Robot/openarm_right_link7/camera_wrist_right",
+        prim_path="{ENV_REGEX_NS}/Robot/openarm_right_hand/camera_wrist_right",
         offset=CameraCfg.OffsetCfg(pos=(0.05, 0.0, 0.04), rot=(0.5, -0.5, 0.5, -0.5), convention="ros"),
     )
     camera_wrist_left = _make_camera_cfg(
-        prim_path="{ENV_REGEX_NS}/Robot/openarm_left_link7/camera_wrist_left",
+        prim_path="{ENV_REGEX_NS}/Robot/openarm_left_hand/camera_wrist_left",
         offset=CameraCfg.OffsetCfg(pos=(0.05, 0.0, 0.04), rot=(0.5, -0.5, 0.5, -0.5), convention="ros"),
     )
     camera_head_left = _make_camera_cfg(
-        prim_path="{ENV_REGEX_NS}/Cameras/camera_head_left",
-        offset=CameraCfg.OffsetCfg(pos=(0.0, 0.18, 1.35), rot=(0.707, 0.0, 0.707, 0.0), convention="ros"),
+        prim_path="{ENV_REGEX_NS}/camera_head_left",
+        offset=CameraCfg.OffsetCfg(pos=(0.0, 0.18, 1.35), rot=(0.707, 0.0, 0.707, 0.0), convention="world"),
     )
     camera_head_right = _make_camera_cfg(
-        prim_path="{ENV_REGEX_NS}/Cameras/camera_head_right",
-        offset=CameraCfg.OffsetCfg(pos=(0.0, -0.18, 1.35), rot=(0.707, 0.0, 0.707, 0.0), convention="ros"),
+        prim_path="{ENV_REGEX_NS}/camera_head_right",
+        offset=CameraCfg.OffsetCfg(pos=(0.0, -0.18, 1.35), rot=(0.707, 0.0, 0.707, 0.0), convention="world"),
     )
     camera_ceiling = _make_camera_cfg(
-        prim_path="{ENV_REGEX_NS}/Cameras/camera_ceiling",
-        offset=CameraCfg.OffsetCfg(pos=(0.55, 0.0, 1.85), rot=(0.0, 1.0, 0.0, 0.0), convention="ros"),
+        prim_path="{ENV_REGEX_NS}/camera_ceiling",
+        offset=CameraCfg.OffsetCfg(pos=(0.55, 0.0, 1.85), rot=(0.0, 1.0, 0.0, 0.0), convention="world"),
     )
 
     light = AssetBaseCfg(
