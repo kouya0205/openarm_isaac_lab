@@ -54,6 +54,8 @@ nodes:
     build: bash scripts/data_collection/pip.sh install -e nodes/dora-openarm-isaac -c constraints/isaaclab-dora.txt
     path: dora-openarm-isaac
     args: "--headless --enable_cameras --render"
+    env:
+      ISAACLAB_PATH: "/workspace/isaaclab"
     inputs:
       position_right: leader/follower_position_right
       position_left: leader/follower_position_left

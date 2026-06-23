@@ -33,7 +33,7 @@ dependencies = [
 ]
 
 [project.scripts]
-dora-openarm-isaac = "dora_openarm_isaac:cli_main"
+dora-openarm-isaac = "dora_openarm_isaac.launcher:cli_main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

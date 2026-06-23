@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dora_openarm_isaac.main import cli_main, main
+from dora_openarm_isaac.launcher import cli_main
+
+
+def main():
+    from dora_openarm_isaac.main import main as run_main
+
+    run_main()
+
 
 __all__ = ["cli_main", "main"]

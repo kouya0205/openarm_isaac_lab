@@ -233,6 +233,10 @@ If ``numpy`` was already upgraded, restore it before re-running:
 /workspace/isaaclab/_isaac_sim/kit/python/bin/python3 -m pip install "numpy>=1.23,<2"
 ```
 
+The ``isaac-collect`` node re-execs through ``isaaclab.sh`` in Docker so Isaac Lab
+dependencies (``toml``, ``torch``, etc.) are available, matching Phase 1 verify.
+Set ``ISAACLAB_PATH`` if Isaac Lab is not at ``/workspace/isaaclab``.
+
 | Node | Role |
 | ---- | ---- |
 | `isaac-collect` | Isaac Sim sim + cameras (`nodes/dora-openarm-isaac`) |
