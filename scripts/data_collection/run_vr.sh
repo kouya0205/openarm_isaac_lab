@@ -19,4 +19,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 "$(dirname "${BASH_SOURCE[0]}")/init_submodules.sh" vr
-exec dora run dataflows/dataflow-vr-isaac.yaml --uv "$@"
+# shellcheck source=scripts/data_collection/dora_cli.sh
+source "$(dirname "${BASH_SOURCE[0]}")/dora_cli.sh"
+DORA="$(resolve_dora_cmd)"
+exec "$DORA" run dataflows/dataflow-vr-isaac.yaml --uv "$@"

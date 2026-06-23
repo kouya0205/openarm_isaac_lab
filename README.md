@@ -219,6 +219,9 @@ pip install -e nodes/dora-openarm-isaac
 ```
 
 The run scripts call ``init_submodules.sh`` as a fallback when submodules are missing.
+In Isaac Sim Docker, ``pip install`` may place the ``dora`` CLI under
+``$(python -c 'import sys; print(sys.prefix)')/bin`` which is not on ``PATH``;
+the run scripts resolve that path automatically.
 
 | Node | Role |
 | ---- | ---- |
