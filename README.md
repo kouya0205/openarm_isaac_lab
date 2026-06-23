@@ -212,6 +212,9 @@ pip install -e nodes/dora-openarm-isaac
 ./scripts/data_collection/run_dummy.sh
 ```
 
+This runs ``dora build`` (installs submodule nodes) then ``dora run``.
+Same two-step flow as the MuJoCo dummy dataflow.
+
 ### VR teleoperation
 
 ```bash
