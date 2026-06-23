@@ -17,9 +17,9 @@
 Run on Linux with Isaac Sim / Isaac Lab installed:
 
     python scripts/teleoperation/verify_data_collection_env.py \
-      --task Isaac-Data-Collection-OpenArm-Bi-Play-v0 --enable_cameras
+      --task Isaac-Data-Collection-OpenArm-Bi-Play-v0
 
-Use ``--headless --enable_cameras`` for servers without a display.
+Use ``--headless`` for servers without a display.
 """
 
 """Launch Isaac Sim Simulator first."""
@@ -61,6 +61,7 @@ import numpy as np
 import torch
 
 import openarm.tasks  # noqa: F401
+from isaaclab.envs import ManagerBasedEnv
 from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 
 from openarm.tasks.manager_based.openarm_manipulation.bimanual.data_collection.joint_utils import (
@@ -101,23 +102,24 @@ def _save_camera_samples(obs: dict, output_dir: str) -> None:
     print(f"Saved {saved} camera images to {output_dir}")
 
 
+def _create_env(task: str) -> ManagerBasedEnv:
+    env_cfg = parse_env_cfg(task, device=args_cli.device, num_envs=1)
+    return gym.make(task, cfg=env_cfg)
+
+
 def main() -> None:
-    env_cfg = parse_env_cfg(args_cli.task, device=args_cli.device, num_envs=1)
-    render_mode = "rgb_array" if args_cli.headless else None
-    env = gym.make(args_cli.task, cfg=env_cfg, render_mode=render_mode)
+    env = _create_env(args_cli.task)
 
     print(f"Task: {args_cli.task}")
-    print(f"Action space: {env.action_space}")
-    print(f"Observation space: {env.observation_space}")
 
     obs, _ = env.reset()
+    print(f"Action shape: {tuple(env.action_manager.action.shape)}")
     print("Initial recording observations:")
     _print_observation_summary(obs)
 
-    zero_action = torch.zeros(env.action_space.shape, device=env.unwrapped.device)
+    zero_action = torch.zeros_like(env.action_manager.action)
     for step in range(args_cli.num_steps):
-        step_result = env.step(zero_action)
-        obs = step_result[0]
+        obs, _ = env.step(zero_action)
         if step % 30 == 0:
             print(f"step {step}: left qpos[0]={obs['recording']['left_arm_qpos'][0, 0].item():.4f}")
 
