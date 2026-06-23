@@ -21,5 +21,11 @@ cd "$ROOT"
 "$(dirname "${BASH_SOURCE[0]}")/init_submodules.sh" dummy
 # shellcheck source=scripts/data_collection/dora_cli.sh
 source "$(dirname "${BASH_SOURCE[0]}")/dora_cli.sh"
+setup_dora_path
 DORA="$(resolve_dora_cmd)"
-exec "$DORA" run dataflows/dataflow-dummy-isaac.yaml --uv "$@"
+DATAFLOW="dataflows/dataflow-dummy-isaac.yaml"
+
+echo "[dataflow] Building node dependencies..."
+"$DORA" build "$DATAFLOW" --uv
+echo "[dataflow] Starting dummy Isaac data collection..."
+exec "$DORA" run "$DATAFLOW" --uv "$@"

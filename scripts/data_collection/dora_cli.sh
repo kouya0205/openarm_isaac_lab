@@ -88,3 +88,24 @@ resolve_dora_cmd() {
   echo "  $pip_bin_dir" >&2
   return 1
 }
+
+setup_dora_path() {
+  local py bin_dir
+
+  for bin_dir in \
+    /workspace/isaaclab/_isaac_sim/kit/python/bin \
+    "${ISAACLAB_PATH:-}/_isaac_sim/kit/python/bin"; do
+    if [[ -n "$bin_dir" && -d "$bin_dir" ]]; then
+      PATH="$bin_dir:$PATH"
+    fi
+  done
+
+  if py="$(resolve_python 2>/dev/null)"; then
+    bin_dir="$("$py" -c 'import os, sys; print(os.path.join(sys.prefix, "bin"))')"
+    if [[ -d "$bin_dir" ]]; then
+      PATH="$bin_dir:$PATH"
+    fi
+  fi
+
+  export PATH
+}
