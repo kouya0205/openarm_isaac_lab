@@ -56,14 +56,15 @@ simulation_app = app_launcher.app
 import os
 import traceback
 
-import gymnasium as gym
 import numpy as np
 import torch
 
 import openarm.tasks  # noqa: F401
 from isaaclab.envs import ManagerBasedEnv
-from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 
+from openarm.tasks.manager_based.openarm_manipulation.bimanual.data_collection.config import (
+    create_data_collection_env,
+)
 from openarm.tasks.manager_based.openarm_manipulation.bimanual.data_collection.joint_utils import (
     DORA_CAMERA_NAMES,
 )
@@ -103,8 +104,7 @@ def _save_camera_samples(obs: dict, output_dir: str) -> None:
 
 
 def _create_env(task: str) -> ManagerBasedEnv:
-    env_cfg = parse_env_cfg(task, device=args_cli.device, num_envs=1)
-    return gym.make(task, cfg=env_cfg)
+    return create_data_collection_env(task, device=args_cli.device, num_envs=1)
 
 
 def main() -> None:
