@@ -11,10 +11,15 @@
 This repository provides simulation and learning environments for the **OpenArm robotic platform**, built on **NVIDIA Isaac Sim** and **Isaac Lab**.
 It enables research and development in **reinforcement learning (RL)**, **imitation learning (IL)**, **teleoperation**, and **sim-to-real transfer** for both **unimanual (single-arm)** and **bimanual (dual-arm)** robotic systems.
 
+> **Note:** This is a personal fork of [enactic/openarm_isaac_lab](https://github.com/enactic/openarm_isaac_lab).
+> It adds Isaac Sim environments for **dora-based teleoperation data collection** (Phase 1).
+> Clone this fork (`kouya0205/openarm_isaac_lab`) rather than the upstream repository.
+
 ### What this repo offers
 - **Isaac Sim models** for OpenArm robots.
 - **Isaac Lab training environments** for RL tasks (reach, lift a cube, open a drawer).
-- **Imitation learning**, **teleoperation interfaces**, and **sim-to-sim / sim-to-real transfer pipelines** are currently under development and will be available soon.
+- **Bimanual data-collection environment** for dora teleoperation (Phase 1).
+- **Imitation learning**, **dora Isaac bridge**, and **sim-to-sim / sim-to-real transfer pipelines** are under active development in this fork.
 
 This repository has been tested with:
 - **Ubuntu 22.04**
@@ -36,6 +41,8 @@ This repository has been tested with:
     - [Training Model](#training-model)
     - [Replay Trained Model](#replay-trained-model)
     - [Analyze logs](#analyze-logs)
+  - [Teleoperation Data Collection (Phase 1)](#teleoperation-data-collection-phase-1)
+  - [Syncing with upstream](#syncing-with-upstream)
   - [Sim2sim](#sim2sim)
   - [Sim2Real Deployment using OpenArm](#sim2real-deployment-using-openarm)
   - [Related links](#related-links)
@@ -69,10 +76,10 @@ docker run --name isaac-lab --entrypoint bash -it --gpus all --rm -e "ACCEPT_EUL
    nvcr.io/nvidia/isaac-lab:2.3.0
 ```
 
-3. Clone git at your HOME directory
+3. Clone this fork at your HOME directory
 ```bash
 cd /workspace
-git clone git@github.com:enactic/openarm_isaac_lab.git
+git clone https://github.com/kouya0205/openarm_isaac_lab.git
 ```
 
 4. Install python package with
@@ -90,10 +97,10 @@ python ./scripts/tools/list_envs.py
 
 It is assumed that you have created a virtual environment named env_isaaclab using miniconda or anaconda and will be working within that environment.
 
-1. Clone git at your HOME directory
+1. Clone this fork at your HOME directory
 ```bash
 cd ~
-git clone git@github.com:enactic/openarm_isaac_lab.git
+git clone https://github.com/kouya0205/openarm_isaac_lab.git
 ```
 
 2. Activate your virtual env which contains Isaac Lab package
@@ -143,6 +150,47 @@ python -m tensorboard.main --logdir=logs
 ```
 
 And open the google and go to `http://localhost:6006/`
+
+## Teleoperation Data Collection (Phase 1)
+
+Bimanual Isaac Sim environment for dora-based teleoperation data collection.
+It matches the I/O layout of `dora-openarm-mujoco` (joint qpos + five JPEG cameras).
+
+| Task Description | Task Name |
+| ---------------- | --------- |
+| Bimanual data collection (headless) | `Isaac-Data-Collection-OpenArm-Bi-v0` |
+| Bimanual data collection (GUI) | `Isaac-Data-Collection-OpenArm-Bi-Play-v0` |
+
+Verify the environment on Linux:
+
+```bash
+python ./scripts/teleoperation/verify_data_collection_env.py \
+  --task Isaac-Data-Collection-OpenArm-Bi-Play-v0 \
+  --enable_cameras
+```
+
+Headless run with camera snapshot export:
+
+```bash
+python ./scripts/teleoperation/verify_data_collection_env.py \
+  --task Isaac-Data-Collection-OpenArm-Bi-v0 \
+  --headless \
+  --enable_cameras \
+  --output_dir /tmp/openarm_cam_test
+```
+
+Phase 2 (in progress): `dora-openarm-isaac` node connecting this environment to the dora dataflow.
+
+## Syncing with upstream
+
+To pull updates from the official repository:
+
+```bash
+git remote add upstream https://github.com/enactic/openarm_isaac_lab.git  # first time only
+git fetch upstream
+git merge upstream/main
+git push myfork main
+```
 
 ## Related links
 
